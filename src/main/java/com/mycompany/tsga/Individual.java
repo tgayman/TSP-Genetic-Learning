@@ -1,44 +1,50 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.tsga;
 
 import java.awt.Point;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
  *
- * @author troyg
+ * @author Troy Gayman
  */
 public class Individual implements Comparable<Individual> {
 
-    private Point[] genome;
+    private Point[] path;
     private final double distance;
 
+    /*
+        Constructor that sets this individuals path to be an argument, 
+        or random, depending on boolean shuffle
+     */
     public Individual(Point[] path, boolean shuffle) {
         if (shuffle) {
-            genome = shuffleGenome(path).clone();
+            this.path = shufflePath(path).clone();
         } else {
-            genome = path;
+            this.path = path;
         }
         distance = calculateDistance();
     }
 
-    //checked
-    public Individual mutate() {
-        Point[] path = genome.clone();
+    /*
+        Takes in a point array path, shuffles all but the first element of path
+        and returns the output.
+     */
+    private Point[] shufflePath(Point[] path) {
+        Point[] newGen = path.clone();
         Random r = new Random();
-        int index = r.nextInt(path.length - 1) + 1;
-        int index2 = r.nextInt(path.length - 1) + 1;
-        Point tmp = path[index];                //swap two elements
-        path[index] = path[index2];
-        path[index2] = tmp;
-        return new Individual(path, false);
+        for (int i = 1; i < newGen.length; i++) {
+            int index = r.nextInt(newGen.length - 2) + 1;
+            Point p = newGen[i];
+            newGen[i] = newGen[index];
+            newGen[index] = p;
+        }
+        return newGen;
     }
-
+    
+    /*
+        This method is necessary for the generation class to sort a list
+        of individuals
+    */
     @Override
     public int compareTo(Individual o) {
         if (distance < o.getDistance()) {
@@ -49,51 +55,44 @@ public class Individual implements Comparable<Individual> {
         return 0;
     }
 
-    //checked
-    private Point[] shuffleGenome(Point[] path) {
-        Point[] newGen = path.clone();
-        Random r = new Random();
-        for (int i = 1; i < newGen.length - 1; i++) { // shuffle all but the first and last elements of the array
-            int index = r.nextInt(newGen.length - 2) + 1;
-            Point p = newGen[i];
-            newGen[i] = newGen[index];
-            newGen[index] = p;
-        }
-        return newGen;
-    }
-
-    public Point[] getGenome(){
-        return genome;
-    }
-    //checked
-    public void printIndv() {
-        System.out.print("INDV : " + distance + " : ");
-        for (Point p : genome) {
-            System.out.print("(" + p.x + "," + p.y + ")  ");
-        }
-        System.out.println("");
-    }
-
-    //checked
-    public double getDistance() {
-        return distance;
-    }
-
-    //checked
+    /*
+        Calculates the total distance(double) between all consecutive
+        points in this individual's path
+    */
     private double calculateDistance() {
         double dist = 0;
-        for (int i = 1; i < genome.length - 1; i++) {
-            dist += distBetweenPoints(genome[i], genome[i - 1]);
+        for (int i = 1; i < path.length - 1; i++) {
+            dist += distBetweenPoints(path[i], path[i - 1]);
         }
-        dist += distBetweenPoints(genome[genome.length - 1], genome[0]);
+        dist += distBetweenPoints(path[path.length - 1], path[0]);
         return dist;
     }
 
-    //checked
+    /*
+        Returns the distance between two points, a helper method 
+        for calculateDistance()
+    */
     private double distBetweenPoints(Point p, Point q) {
         double deltaX = Math.abs(p.x - q.x);
         double deltaY = Math.abs(p.y - q.y);
         double dist = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
         return dist;
+    }
+
+    /*----------------- Print/Get/Set Methods ------------------ */
+    public void printIndv() {
+        System.out.print("INDV : " + distance + " : ");
+        for (Point p : path) {
+            System.out.print("(" + p.x + "," + p.y + ")  ");
+        }
+        System.out.println("");
+    }
+
+    public Point[] getPath() {
+        return path;
+    }
+
+    public double getDistance() {
+        return distance;
     }
 }
